@@ -42,7 +42,6 @@ function renderInterface() {
   const container = document.getElementById('graficos');
   container.innerHTML = '';
 
-  // Área de filtros
   const filtroDiv = document.createElement('div');
   filtroDiv.id = 'filtroInteresses';
   filtroDiv.innerHTML = '<h2>Filtros por Interesse:</h2>';
@@ -59,12 +58,11 @@ function renderInterface() {
     filtroDiv.appendChild(botao);
   });
 
-  // Área dos gráficos (sempre presente)
   const graficosDiv = document.createElement('div');
   graficosDiv.id = 'graficosFiltrados';
   container.appendChild(graficosDiv);
 
-  atualizarGraficos(); // mostra os gráficos iniciais (sem filtro)
+  atualizarGraficos();
 }
 
 function alternarFiltro(botao) {
@@ -107,6 +105,27 @@ function atualizarGraficos() {
 
   const statusData = contar('status');
   criarGrafico('Status do Atendimento', 'statusGrafico', statusData, graficosDiv);
+
+  // Gráfico adicional: Funil de Vendas (agrupado)
+  const funilContagem = {
+    Agendado: 0,
+    Compareceu: 0,
+    Fechou: 0,
+    'Não Fechou': 0,
+    Faltou: 0
+  };
+
+  filtrados.forEach(item => {
+    const status = item.status.toLowerCase();
+
+    if (status.includes('agendado')) funilContagem.Agendado++;
+    if (status.includes('visitou')) funilContagem.Compareceu++;
+    if (status.includes('fechou') && !status.includes('não')) funilContagem.Fechou++;
+    if (status.includes('não fechou') || status.includes('visitou e não fechou')) funilContagem['Não Fechou']++;
+    if (status.includes('faltou')) funilContagem.Faltou++;
+  });
+
+  criarGrafico('Funil de Vendas (Agrupado)', 'funilGrafico', funilContagem, graficosDiv);
 }
 
 function criarGrafico(titulo, id, dados, container) {
